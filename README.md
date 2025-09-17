@@ -52,6 +52,13 @@ Press `Ctrl+C` in your terminal, then run:
 docker-compose down
 ```
 
+### 6. Granting permissions to docker
+
+Use the following commands for Mac and Linux(Change your path):
+
+- chmod -R 755 /Users/WHOAMI/Documents/little_automation_tool/data/web/static
+- chmod -R 755 /Users/WHOAMI/Documents/little_automation_tool/data/web/media
+
 ## Development
 
 - App code is in [`djangoapp/`](djangoapp/)
