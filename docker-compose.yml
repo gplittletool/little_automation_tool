@@ -1,14 +1,14 @@
 version: '3.9'
 
 services:
-  djangoapp:
+  src:
     container_name: little_tool_djangoapp
     build:
       context: .
     ports:
       - "8000:8000"
     volumes:
-      - ./djangoapp:/djangoapp
+      - ./src:/src
       - ./data/web/static:/data/web/static
       - ./data/web/media:/data/web/media
     env_file:
