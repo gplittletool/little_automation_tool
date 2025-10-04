@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   src:
-    container_name: little_tool_djangoapp
+    container_name: little_automation_tool
     build:
       context: .
     ports:
