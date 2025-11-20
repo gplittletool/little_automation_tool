@@ -12,7 +12,7 @@ Sistema inteligente de automação de estudos com IA, que analisa PDFs, extrai e
 - **Controle de Faltas** - Acompanhe sua frequência
 - **Lembretes Automáticos** - 1 dia e 3 horas antes
 
-**Resultado:** De 3 horas digitando → 1 minuto automático! ⚡
+**Resultado:** De 3 horas digitando → 1 minuto automático!
 
 ---
 
@@ -49,7 +49,7 @@ Sistema inteligente de automação de estudos com IA, que analisa PDFs, extrai e
 
 4. **Deploy automático!** 
 
-**📖 Guia completo:** [`DEPLOY_RAILWAY.md`](DEPLOY_RAILWAY.md)
+** Guia completo:** [`DEPLOY_RAILWAY.md`](DEPLOY_RAILWAY.md)
 
 ---
 
