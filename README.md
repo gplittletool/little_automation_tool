@@ -2,21 +2,21 @@
 
 Sistema inteligente de automação de estudos com IA, que analisa PDFs, extrai eventos automaticamente e sincroniza com Notion + Telegram.
 
-## 🚀 Features
+## Features
 
-- 📤 **Upload de PDF** - Envie seu plano de estudos
-- 🤖 **IA Analisa** - GPT-4 ou LM Studio extraem eventos e matérias
-- 📅 **Criação Automática** - Matérias e eventos no sistema
-- 🔗 **Sincroniza Notion** - Eventos aparecem automaticamente
-- 📱 **Notifica Telegram** - Lembretes antes dos eventos
-- 📊 **Controle de Faltas** - Acompanhe sua frequência
-- ⏰ **Lembretes Automáticos** - 1 dia e 3 horas antes
+- **Upload de PDF** - Envie seu plano de estudos
+- **IA Analisa** - GPT-4 ou LM Studio extraem eventos e matérias
+- **Criação Automática** - Matérias e eventos no sistema
+- **Sincroniza Notion** - Eventos aparecem automaticamente
+- **Notifica Telegram** - Lembretes antes dos eventos
+- **Controle de Faltas** - Acompanhe sua frequência
+- **Lembretes Automáticos** - 1 dia e 3 horas antes
 
 **Resultado:** De 3 horas digitando → 1 minuto automático! ⚡
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 - **Backend:** Django 4.2 + Django REST Framework
 - **Database:** PostgreSQL
@@ -27,7 +27,7 @@ Sistema inteligente de automação de estudos com IA, que analisa PDFs, extrai e
 
 ---
 
-## 🚂 Deploy no Railway (Recomendado)
+## Deploy no Railway (Recomendado)
 
 ### Quick Start
 
@@ -47,13 +47,13 @@ Sistema inteligente de automação de estudos com IA, que analisa PDFs, extrai e
    OPENAI_API_KEY=sk-... (opcional)
    ```
 
-4. **Deploy automático!** ✅
+4. **Deploy automático!** 
 
 **📖 Guia completo:** [`DEPLOY_RAILWAY.md`](DEPLOY_RAILWAY.md)
 
 ---
 
-## 🐳 Desenvolvimento Local (Docker)
+## Desenvolvimento Local (Docker)
 
 ### Pré-requisitos
 
@@ -87,7 +87,7 @@ http://localhost:8000/
 
 ---
 
-## 📱 Configurar Telegram
+## Configurar Telegram
 
 ### 1. Criar Bot
 
@@ -120,7 +120,7 @@ docker-compose exec djangoapp python manage.py setup_telegram_webhook
 
 ---
 
-## 🤖 IA: OpenAI ou LM Studio
+## IA: OpenAI ou LM Studio
 
 ### Opção 1: OpenAI (Nuvem)
 
@@ -141,11 +141,11 @@ OPENAI_BASE_URL=http://host.docker.internal:1234/v1
 OPENAI_MODEL=llama-3.1-8b-instruct
 ```
 
-**Custo:** Grátis! ✅
+**Custo:** Grátis!
 
 ---
 
-## 📊 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 little_automation_tool/
@@ -173,7 +173,7 @@ little_automation_tool/
 
 ---
 
-## 🔄 Fluxo do Sistema
+## Fluxo do Sistema
 
 ```
 1. Usuário faz upload de PDF
@@ -193,7 +193,7 @@ little_automation_tool/
 
 ---
 
-## 🎯 Roadmap
+## Roadmap
 
 - [x] Sistema de autenticação
 - [x] Upload e processamento de PDF
@@ -207,46 +207,3 @@ little_automation_tool/
 - [ ] Exportação iCal/Google Calendar
 - [ ] Gamificação
 - [ ] Notas de provas
-
----
-
-## 📚 Documentação
-
-- **Deploy:** [`DEPLOY_RAILWAY.md`](DEPLOY_RAILWAY.md)
-- **LM Studio:** Usar IA local gratuita (docs inline)
-- **API:** Documentação automática em `/api/docs/`
-
----
-
-## 🤝 Contribuindo
-
-1. Fork o projeto
-2. Criar branch: `git checkout -b feature/nova-feature`
-3. Commit: `git commit -m 'Add nova feature'`
-4. Push: `git push origin feature/nova-feature`
-5. Abrir Pull Request
-
----
-
-## 📝 Licença
-
-Este projeto está sob a licença MIT.
-
----
-
-## 👨‍💻 Autor
-
-Desenvolvido com 💙 + ☕ + 🤖
-
----
-
-## 🆘 Suporte
-
-**Problemas?**
-1. Ver [`DEPLOY_RAILWAY.md`](DEPLOY_RAILWAY.md)
-2. Verificar logs: `railway logs`
-3. Abrir issue no GitHub
-
----
-
-**🚀 Sistema 100% funcional e pronto para produção!**
