@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Little Automation Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Dashboard</h1>
+            <p class="text-muted">Olá, {{ user.first_name|default:user.username }}! 👋</p>
+        </div>
+        <div>
+            <a href="{% url 'upload_pdf' %}" class="btn btn-primary">
+                <i class="bi bi-upload"></i> Upload PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Status de Integrações -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-{% if profile.is_telegram_connected %}success{% else %}warning{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Telegram</h6>
+                            {% if profile.is_telegram_connected %}
+                                <small class="text-success">✓ Conectado</small>
+                            {% else %}
+                                <small class="text-warning">⚠ Não conectado</small>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'telegram_integration' %}" class="btn btn-sm btn-outline-primary">
+                            Configurar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-{% if profile.is_notion_connected %}success{% else %}warning{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1">Notion</h6>
+                            {% if profile.is_notion_connected %}
+                                <small class="text-success">✓ Conectado</small>
+                            {% else %}
+                                <small class="text-warning">⚠ Não conectado</small>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'onboarding' %}" class="btn btn-sm btn-outline-primary">
+                            Configurar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{ total_subjects }}</h3>
+                    <p class="text-muted mb-0 small">Matérias Ativas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{ total_events }}</h3>
+                    <p class="text-muted mb-0 small">Eventos Total</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-warning bg-opacity-10">
+                <div class="card-body text-center">
+                    <h3 class="mb-1 text-warning">{{ today_events }}</h3>
+                    <p class="text-muted mb-0 small">Eventos Hoje</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-info bg-opacity-10">
+                <div class="card-body text-center">
+                    <h3 class="mb-1 text-info">{{ week_events }}</h3>
+                    <p class="text-muted mb-0 small">Esta Semana</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Eventos Próximos -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📅 Eventos Próximos</h5>
+                    <a href="{% url 'events_list' %}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if upcoming_events %}
+                        <div class="list-group list-group-flush">
+                            {% for event in upcoming_events %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            {% if event.event_type == 'prova' %}📝
+                                            {% elif event.event_type == 'trabalho' %}📄
+                                            {% elif event.event_type == 'entrega' %}📤
+                                            {% elif event.event_type == 'revisao' %}📖
+                                            {% elif event.event_type == 'aula' %}🎓
+                                            {% else %}📚{% endif %}
+                                            {{ event.title }}
+                                        </h6>
+                                        <p class="mb-1 small text-muted">
+                                            {% if event.subject %}
+                                                <span class="badge bg-secondary">{{ event.subject.name }}</span>
+                                            {% endif %}
+                                            <span class="ms-2">{{ event.event_date|date:"d/m/Y" }}</span>
+                                            {% if event.event_time %}
+                                                às {{ event.event_time|time:"H:i" }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        {% if event.days_until == 0 %}
+                                            <span class="badge bg-danger">Hoje!</span>
+                                        {% elif event.days_until == 1 %}
+                                            <span class="badge bg-warning">Amanhã</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">Em {{ event.days_until }} dias</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            <p class="mb-0">Nenhum evento próximo 🎉</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Planos Recentes -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">📄 Planos Recentes</h6>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_plans %}
+                        <div class="list-group list-group-flush">
+                            {% for plan in recent_plans %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="mb-0 small">{{ plan.title }}</p>
+                                        <small class="text-muted">
+                                            {% if plan.status == 'completed' %}
+                                                <span class="text-success">✓</span> {{ plan.events_created }} eventos
+                                            {% elif plan.status == 'processing' %}
+                                                <span class="spinner-border spinner-border-sm text-primary"></span> Processando...
+                                            {% elif plan.status == 'failed' %}
+                                                <span class="text-danger">✗ Erro</span>
+                                            {% else %}
+                                                Pendente
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="p-3 text-center text-muted">
+                            <small>Nenhum plano ainda</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Matérias em Risco -->
+            {% if at_risk_subjects %}
+            <div class="card border-warning shadow-sm">
+                <div class="card-header bg-warning bg-opacity-10 border-warning">
+                    <h6 class="mb-0 text-warning">⚠️ Atenção às Faltas</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for subject in at_risk_subjects %}
+                        <div class="list-group-item">
+                            <p class="mb-0 small fw-bold">{{ subject.name }}</p>
+                            <small class="text-danger">
+                                {{ subject.current_absences }}/{{ subject.max_absences }} faltas
+                                ({{ subject.absences_remaining }} restantes)
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

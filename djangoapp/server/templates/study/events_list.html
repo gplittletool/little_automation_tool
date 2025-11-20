@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Eventos - Little Automation Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>📅 Meus Eventos</h1>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-house"></i> Dashboard
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{% url 'events_list' %}" class="row g-3">
+                <!-- Filtro de Data -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Período</label>
+                    <select name="date" class="form-select" onchange="this.form.submit()">
+                        <option value="upcoming" {% if filter_date == 'upcoming' %}selected{% endif %}>Próximos</option>
+                        <option value="today" {% if filter_date == 'today' %}selected{% endif %}>Hoje</option>
+                        <option value="week" {% if filter_date == 'week' %}selected{% endif %}>Esta Semana</option>
+                        <option value="past" {% if filter_date == 'past' %}selected{% endif %}>Passados</option>
+                        <option value="all" {% if filter_date == 'all' %}selected{% endif %}>Todos</option>
+                    </select>
+                </div>
+
+                <!-- Filtro de Tipo -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Tipo</label>
+                    <select name="type" class="form-select" onchange="this.form.submit()">
+                        <option value="all" {% if filter_type == 'all' %}selected{% endif %}>Todos</option>
+                        {% for value, label in event_types %}
+                        <option value="{{ value }}" {% if filter_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filtro de Matéria -->
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Matéria</label>
+                    <select name="subject" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}" {% if filter_subject|stringformat:"s" == subject.id|stringformat:"s" %}selected{% endif %}>
+                            {{ subject.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Botão Limpar -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <a href="{% url 'events_list' %}" class="btn btn-outline-secondary w-100">Limpar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Eventos -->
+    <div class="row">
+        {% if events %}
+            {% for event in events %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm {% if event.is_completed %}opacity-75{% endif %}">
+                    <div class="card-body">
+                        <!-- Header do Card -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge {% if event.event_type == 'prova' %}bg-danger
+                                {% elif event.event_type == 'trabalho' %}bg-primary
+                                {% elif event.event_type == 'entrega' %}bg-warning text-dark
+                                {% elif event.event_type == 'revisao' %}bg-info
+                                {% elif event.event_type == 'aula' %}bg-success
+                                {% else %}bg-secondary{% endif %}">
+                                {% if event.event_type == 'prova' %}📝
+                                {% elif event.event_type == 'trabalho' %}📄
+                                {% elif event.event_type == 'entrega' %}📤
+                                {% elif event.event_type == 'revisao' %}📖
+                                {% elif event.event_type == 'aula' %}🎓
+                                {% else %}📚{% endif %}
+                                {{ event.get_event_type_display }}
+                            </span>
+                            
+                            {% if event.days_until == 0 %}
+                                <span class="badge bg-danger">Hoje!</span>
+                            {% elif event.days_until == 1 %}
+                                <span class="badge bg-warning">Amanhã</span>
+                            {% elif event.days_until > 0 and event.days_until <= 7 %}
+                                <span class="badge bg-info">{{ event.days_until }} dias</span>
+                            {% elif event.is_past %}
+                                <span class="badge bg-secondary">Passou</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Título -->
+                        <h5 class="card-title {% if event.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                            {{ event.title }}
+                        </h5>
+
+                        <!-- Matéria -->
+                        {% if event.subject %}
+                        <p class="mb-2">
+                            <span class="badge" style="background-color: {{ event.subject.color }};">
+                                {{ event.subject.name }}
+                            </span>
+                        </p>
+                        {% endif %}
+
+                        <!-- Data e Hora -->
+                        <p class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i> {{ event.event_date|date:"d/m/Y (l)" }}
+                            </small>
+                        </p>
+                        {% if event.event_time %}
+                        <p class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> {{ event.event_time|time:"H:i" }}
+                                {% if event.end_time %}até {{ event.end_time|time:"H:i" }}{% endif %}
+                            </small>
+                        </p>
+                        {% endif %}
+
+                        <!-- Local -->
+                        {% if event.location %}
+                        <p class="mb-2">
+                            <small class="text-muted">
+                                <i class="bi bi-geo-alt"></i> {{ event.location }}
+                            </small>
+                        </p>
+                        {% endif %}
+
+                        <!-- Descrição -->
+                        {% if event.description %}
+                        <p class="mb-3 small">{{ event.description|truncatewords:20 }}</p>
+                        {% endif %}
+
+                        <!-- Ações -->
+                        <div class="d-flex gap-2">
+                            <button 
+                                class="btn btn-sm {% if event.is_completed %}btn-outline-success{% else %}btn-success{% endif %} flex-grow-1"
+                                onclick="toggleComplete({{ event.id }}, this)"
+                            >
+                                {% if event.is_completed %}
+                                    <i class="bi bi-check-circle-fill"></i> Concluído
+                                {% else %}
+                                    <i class="bi bi-circle"></i> Marcar Concluído
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 text-muted">Nenhum evento encontrado</h5>
+                        <p class="text-muted">Ajuste os filtros ou faça upload de um novo plano de estudos.</p>
+                        <a href="{% url 'upload_pdf' %}" class="btn btn-primary mt-2">
+                            <i class="bi bi-upload"></i> Upload PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+async function toggleComplete(eventId, button) {
+    try {
+        const response = await fetch(`/api/events/${eventId}/toggle-complete/`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Atualizar botão
+            const icon = data.is_completed ? 
+                '<i class="bi bi-check-circle-fill"></i> Concluído' : 
+                '<i class="bi bi-circle"></i> Marcar Concluído';
+            
+            button.innerHTML = icon;
+            button.className = data.is_completed ? 
+                'btn btn-sm btn-outline-success flex-grow-1' : 
+                'btn btn-sm btn-success flex-grow-1';
+            
+            // Atualizar card
+            const card = button.closest('.card');
+            const title = card.querySelector('.card-title');
+            
+            if (data.is_completed) {
+                card.classList.add('opacity-75');
+                title.classList.add('text-decoration-line-through', 'text-muted');
+            } else {
+                card.classList.remove('opacity-75');
+                title.classList.remove('text-decoration-line-through', 'text-muted');
+            }
+        } else {
+            alert('Erro ao atualizar evento');
+        }
+    } catch (error) {
+        alert('Erro: ' + error.message);
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
+

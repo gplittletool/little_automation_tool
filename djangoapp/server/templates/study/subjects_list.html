@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Matérias - Little Automation Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>📚 Minhas Matérias</h1>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-house"></i> Dashboard
+        </a>
+    </div>
+
+    {% if subjects %}
+        <div class="row">
+            {% for subject in subjects %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <!-- Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">{{ subject.name }}</h5>
+                                {% if subject.code %}
+                                <p class="text-muted small mb-0">{{ subject.code }}</p>
+                                {% endif %}
+                            </div>
+                            <span class="badge" style="background-color: {{ subject.color }};">
+                                {{ subject.semester|default:"Ativo" }}
+                            </span>
+                        </div>
+
+                        <!-- Professor -->
+                        {% if subject.professor %}
+                        <p class="mb-2">
+                            <i class="bi bi-person"></i>
+                            <small>{{ subject.professor }}</small>
+                        </p>
+                        {% endif %}
+
+                        <!-- Frequência -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small><strong>Frequência</strong></small>
+                                <small class="{% if subject.attendance_percentage >= 75 %}text-success{% elif subject.attendance_percentage >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                    {{ subject.attendance_percentage|floatformat:1 }}%
+                                </small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar {% if subject.attendance_percentage >= 75 %}bg-success{% elif subject.attendance_percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     style="width: {{ subject.attendance_percentage }}%">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Faltas -->
+                        <div class="row text-center g-2">
+                            <div class="col">
+                                <div class="p-2 bg-light rounded">
+                                    <small class="text-muted d-block">Faltas</small>
+                                    <strong>{{ subject.current_absences }}/{{ subject.max_absences }}</strong>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="p-2 bg-light rounded">
+                                    <small class="text-muted d-block">Restantes</small>
+                                    <strong class="{% if subject.absences_remaining <= 2 %}text-danger{% elif subject.absences_remaining <= 5 %}text-warning{% else %}text-success{% endif %}">
+                                        {{ subject.absences_remaining }}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alerta -->
+                        {% if subject.is_at_risk %}
+                        <div class="alert alert-warning mt-3 mb-0 py-2">
+                            <small><i class="bi bi-exclamation-triangle"></i> Atenção ao limite de faltas!</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-journals text-muted" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-muted">Nenhuma matéria encontrada</h5>
+                <p class="text-muted">Faça upload de um plano de estudos para criar suas matérias automaticamente.</p>
+                <a href="{% url 'upload_pdf' %}" class="btn btn-primary mt-2">
+                    <i class="bi bi-upload"></i> Upload PDF
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

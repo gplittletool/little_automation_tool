@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Configuração - Little Automation Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="mb-2">⚙️ Configuração de Integrações</h1>
+                <p class="text-muted">Conecte suas contas para aproveitar ao máximo a ferramenta!</p>
+            </div>
+
+            <!-- Telegram -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-1">
+                                <i class="bi bi-telegram text-info"></i> Telegram
+                            </h4>
+                            <p class="text-muted mb-0">Receba notificações automáticas dos seus eventos</p>
+                        </div>
+                        <div>
+                            {% if profile.is_telegram_connected %}
+                                <span class="badge bg-success fs-6">✓ Conectado</span>
+                            {% else %}
+                                <span class="badge bg-warning fs-6">Não Conectado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if profile.is_telegram_connected %}
+                        <div class="alert alert-success mb-0">
+                            <i class="bi bi-check-circle"></i>
+                            Conta conectada: <strong>@{{ profile.telegram_username }}</strong>
+                            <div class="mt-2">
+                                <a href="{% url 'telegram_integration' %}" class="btn btn-sm btn-outline-primary">
+                                    Gerenciar Conexão
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Você ainda não conectou sua conta do Telegram.
+                            <div class="mt-2">
+                                <a href="{% url 'telegram_integration' %}" class="btn btn-sm btn-warning">
+                                    Conectar Agora
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Notion -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-grow-1">
+                            <h4 class="mb-1">
+                                <i class="bi bi-journal-text"></i> Notion
+                            </h4>
+                            <p class="text-muted mb-0">Sincronize eventos automaticamente com seu Notion</p>
+                        </div>
+                        <div>
+                            {% if profile.is_notion_connected %}
+                                <span class="badge bg-success fs-6">✓ Conectado</span>
+                            {% else %}
+                                <span class="badge bg-warning fs-6">Não Conectado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if profile.is_notion_connected %}
+                        <div class="alert alert-success mb-3">
+                            <i class="bi bi-check-circle"></i>
+                            Database conectado com sucesso!
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="disconnectNotion()">
+                            Desconectar
+                        </button>
+                    {% else %}
+                        <!-- Formulário de Conexão -->
+                        <div id="notionForm">
+                            <div class="alert alert-info">
+                                <strong>Como conectar:</strong>
+                                <ol class="mb-0 mt-2 small">
+                                    <li>Crie uma Integration no Notion: <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a></li>
+                                    <li>Copie o "Internal Integration Token"</li>
+                                    <li>Crie um Database no Notion e compartilhe com a Integration</li>
+                                    <li>Copie o ID do Database (está na URL)</li>
+                                    <li>Cole ambos nos campos abaixo</li>
+                                </ol>
+                            </div>
+
+                            <form id="connectNotionForm">
+                                <div class="mb-3">
+                                    <label for="notion_token" class="form-label fw-bold">Integration Token</label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="notion_token" 
+                                        placeholder="secret_..."
+                                        required
+                                    >
+                                    <div class="form-text">Exemplo: secret_ABcd1234EFgh5678...</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="notion_database_id" class="form-label fw-bold">Database ID</label>
+                                    <input 
+                                        type="text" 
+                                        class="form-control" 
+                                        id="notion_database_id" 
+                                        placeholder="abc123def456..."
+                                        required
+                                    >
+                                    <div class="form-text">Está na URL do seu database do Notion</div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" id="connectBtn">
+                                    <i class="bi bi-link-45deg"></i> Conectar Notion
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Botão Continuar -->
+            <div class="d-grid gap-2">
+                <a href="{% url 'dashboard' %}" class="btn btn-lg btn-primary">
+                    <i class="bi bi-house"></i> Ir para Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+{% if not profile.is_notion_connected %}
+document.getElementById('connectNotionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const token = document.getElementById('notion_token').value;
+    const databaseId = document.getElementById('notion_database_id').value;
+    const connectBtn = document.getElementById('connectBtn');
+    
+    // Desabilitar botão
+    connectBtn.disabled = true;
+    connectBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Conectando...';
+    
+    try {
+        const response = await fetch('/api/notion/connect/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                token: token,
+                database_id: databaseId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+            connectBtn.disabled = false;
+            connectBtn.innerHTML = '<i class="bi bi-link-45deg"></i> Conectar Notion';
+        }
+        
+    } catch (error) {
+        alert('Erro ao conectar: ' + error.message);
+        connectBtn.disabled = false;
+        connectBtn.innerHTML = '<i class="bi bi-link-45deg"></i> Conectar Notion';
+    }
+});
+{% endif %}
+
+{% if profile.is_notion_connected %}
+async function disconnectNotion() {
+    if (!confirm('Deseja realmente desconectar o Notion?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/notion/disconnect/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ Notion desconectado!');
+            location.reload();
+        } else {
+            alert('❌ Erro ao desconectar');
+        }
+    } catch (error) {
+        alert('Erro: ' + error.message);
+    }
+}
+{% endif %}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}
+

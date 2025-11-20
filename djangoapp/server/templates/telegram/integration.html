@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+
+{% block title %}Integração Telegram - Sistema de Estudos{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Card Principal -->
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="bi bi-telegram" style="font-size: 4rem; color: #0088cc;"></i>
+                    <h2 class="mt-3">Conectar Telegram</h2>
+                    <p class="text-muted">Receba notificações importantes sobre seus estudos</p>
+                </div>
+
+                <!-- Status da Conexão -->
+                {% if profile.is_telegram_connected %}
+                <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <strong>Telegram Conectado!</strong><br>
+                        <small>@{{ profile.telegram_username }} - Conectado em {{ profile.telegram_connected_at|date:"d/m/Y às H:i" }}</small>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <a href="#" class="btn btn-danger" onclick="disconnectTelegram()">
+                        <i class="bi bi-x-circle"></i> Desconectar
+                    </a>
+                    <a href="#" class="btn btn-primary ms-2" onclick="sendTest()">
+                        <i class="bi bi-send"></i> Enviar Teste
+                    </a>
+                </div>
+                
+                {% else %}
+                <!-- Não conectado - mostrar opções -->
+                
+                {% if not active_code %}
+                <!-- Botão para gerar código -->
+                <div class="text-center mb-4">
+                    <button class="btn btn-primary btn-lg" onclick="generateCode()">
+                        <i class="bi bi-qr-code"></i> Gerar Código de Conexão
+                    </button>
+                </div>
+                {% else %}
+                <!-- Código ativo - mostrar opções -->
+                <div id="connection-options">
+                    <h4 class="text-center mb-4">Escolha como deseja conectar:</h4>
+                    
+                    <div class="row g-4">
+                        <!-- Opção 1: Deep Link (Clique Rápido) -->
+                        <div class="col-md-6">
+                            <div class="card connection-option h-100" id="deeplink-option">
+                                <div class="card-body text-center p-4">
+                                    <i class="bi bi-link-45deg" style="font-size: 3rem; color: #0088cc;"></i>
+                                    <h5 class="mt-3">🚀 Conexão Rápida</h5>
+                                    <p class="text-muted">Mais rápido e fácil</p>
+                                    <a href="https://t.me/{{ bot_username }}?start={{ active_code.code }}" 
+                                       class="btn btn-primary" 
+                                       target="_blank">
+                                        <i class="bi bi-telegram"></i> Abrir no Telegram
+                                    </a>
+                                    <p class="text-muted small mt-3">
+                                        Clique no botão acima e depois em "START" no Telegram
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Opção 2: QR Code -->
+                        <div class="col-md-6">
+                            <div class="card connection-option h-100" id="qrcode-option">
+                                <div class="card-body text-center p-4">
+                                    <i class="bi bi-qr-code-scan" style="font-size: 3rem; color: #0088cc;"></i>
+                                    <h5 class="mt-3">📱 QR Code</h5>
+                                    <p class="text-muted">Escaneie com o Telegram</p>
+                                    <div class="qr-code-container mt-3">
+                                        <img src="/api/telegram/qr-code/{{ active_code.code }}/" 
+                                             alt="QR Code" 
+                                             style="max-width: 200px;">
+                                    </div>
+                                    <p class="text-muted small mt-3">
+                                        Abra o Telegram → Menu → Escanear QR Code
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Opção 3: Manual (colapsado) -->
+                    <div class="text-center mt-4">
+                        <a class="btn btn-link" data-bs-toggle="collapse" href="#manual-option" role="button">
+                            <i class="bi bi-chevron-down"></i> Ver opção manual
+                        </a>
+                    </div>
+                    
+                    <div class="collapse mt-3" id="manual-option">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>🔧 Conexão Manual</h6>
+                                <ol class="text-start">
+                                    <li>Abra o Telegram</li>
+                                    <li>Busque por: <code>@{{ bot_username }}</code></li>
+                                    <li>Envie: <code>/start</code></li>
+                                    <li>Envie: <code>/verificar {{ active_code.code }}</code></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Info do código -->
+                    <div class="alert alert-info mt-4">
+                        <small>
+                            <i class="bi bi-info-circle"></i>
+                            Código válido até: {{ active_code.expires_at|date:"d/m/Y às H:i" }}
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Benefícios -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-bell" style="font-size: 2rem; color: #667eea;"></i>
+                        <h6 class="mt-2">Lembretes</h6>
+                        <small class="text-muted">Receba alertas de provas e entregas</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-check" style="font-size: 2rem; color: #667eea;"></i>
+                        <h6 class="mt-2">Eventos</h6>
+                        <small class="text-muted">Notificações de eventos próximos</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-clock" style="font-size: 2rem; color: #667eea;"></i>
+                        <h6 class="mt-2">Tempo Real</h6>
+                        <small class="text-muted">Atualizações instantâneas</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function generateCode() {
+        try {
+            // Buscar CSRF token
+            const csrftoken = getCookie('csrftoken');
+            
+            const response = await fetch('/api/telegram/generate-code/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Recarregar página para mostrar opções
+                location.reload();
+            } else {
+                alert('Erro ao gerar código: ' + data.message);
+            }
+        } catch (error) {
+            alert('Erro ao gerar código');
+            console.error(error);
+        }
+    }
+    
+    async function disconnectTelegram() {
+        if (!confirm('Deseja realmente desconectar o Telegram?')) {
+            return;
+        }
+        
+        try {
+            const csrftoken = getCookie('csrftoken');
+            
+            const response = await fetch('/api/telegram/disconnect/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro: ' + data.message);
+            }
+        } catch (error) {
+            alert('Erro ao desconectar');
+            console.error(error);
+        }
+    }
+    
+    async function sendTest() {
+        try {
+            const csrftoken = getCookie('csrftoken');
+            
+            const response = await fetch('/api/telegram/send-test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('✅ Notificação de teste enviada! Verifique seu Telegram.');
+            } else {
+                alert('❌ Erro: ' + data.message);
+            }
+        } catch (error) {
+            alert('Erro ao enviar teste');
+            console.error(error);
+        }
+    }
+    
+    // Verificar status da conexão
+    async function checkStatus() {
+        const btn = document.getElementById('checkStatusBtn');
+        const originalHtml = btn.innerHTML;
+        
+        try {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verificando...';
+            
+            const response = await fetch('/api/telegram/status/');
+            const data = await response.json();
+            
+            if (data.is_connected) {
+                // Conectado! Recarregar página para mostrar status
+                alert('✅ Conectado com sucesso!');
+                location.reload();
+            } else {
+                alert('ℹ️ Ainda não conectado. Certifique-se de enviar o código no Telegram.');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        } catch (error) {
+            alert('Erro ao verificar status');
+            console.error(error);
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    }
+    
+    // Auto-verificar status a cada 5 segundos (quando há código gerado)
+    let autoCheckInterval = null;
+    
+    function startAutoCheck() {
+        // Se já está conectado, não precisa verificar
+        if ({{ is_connected|lower }}) {
+            return;
+        }
+        
+        // Verificar a cada 5 segundos
+        autoCheckInterval = setInterval(async () => {
+            try {
+                const response = await fetch('/api/telegram/status/');
+                const data = await response.json();
+                
+                if (data.is_connected) {
+                    clearInterval(autoCheckInterval);
+                    alert('✅ Telegram conectado com sucesso!');
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Erro ao verificar status:', error);
+            }
+        }, 5000); // 5 segundos
+    }
+    
+    // Iniciar auto-check quando página carregar (se não estiver conectado)
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if not is_connected %}
+        // Só iniciar auto-check se houver um código na página
+        const codeElement = document.getElementById('verification-code');
+        if (codeElement && codeElement.textContent.trim()) {
+            console.log('Auto-check iniciado. Verificando conexão a cada 5s...');
+            startAutoCheck();
+        }
+        {% endif %}
+    });
+    
+    // Parar auto-check quando sair da página
+    window.addEventListener('beforeunload', function() {
+        if (autoCheckInterval) {
+            clearInterval(autoCheckInterval);
+        }
+    });
+    
+    // Função para pegar CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}
+

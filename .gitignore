@@ -1,66 +1,10 @@
-/djangoapp/static/
-/djangoapp/media/
-/djangoapp/project/local_settings.py
-gunicorn-error-log
-__localcode
-/data/
-
-# Django #
-*.log
-*.pot
-*.pyc
-__pycache__
-db.sqlite3
-
-# Backup files #
-*.bak
-
-# If you are using PyCharm #
-# User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-
-# Default ignored files
-/shelf/
-/workspace.xml
-
-# AWS User-specific
-.idea/**/aws.xml
-
-# Generated files
-.idea/**/contentModel.xml
-
-# Sensitive or high-churn files
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
-
-# Gradle
-.idea/**/gradle.xml
-.idea/**/libraries
-
-# File-based project format
-*.iws
-
-# IntelliJ
-out/
-
-# JIRA plugin
-atlassian-ide-plugin.xml
-
-# Python #
+# Python
+__pycache__/
 *.py[cod]
 *$py.class
-
-# Distribution / packaging
-.Python build/
+*.so
+.Python
+build/
 develop-eggs/
 dist/
 downloads/
@@ -75,81 +19,53 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-*.manifest
-*.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-.pytest_cache/
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery
-celerybeat-schedule.*
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
+# Virtual Environment
 venv/
 ENV/
-env.bak/
-venv.bak/
-.env.dev
-.env.prod
-.env.local
+env/
 
-# mkdocs documentation
-/site
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/staticfiles/
+/mediafiles/
 
-# mypy
-.mypy_cache/
+# Environment variables
+.env
+*.env
+!.env.example
 
-# Sublime Text #
-*.tmlanguage.cache
-*.tmPreferences.cache
-*.stTheme.cache
-*.sublime-workspace
-*.sublime-project
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# sftp configuration file
-sftp-config.json
+# OS
+.DS_Store
+Thumbs.db
 
-# Package control specific files Package
-Control.last-run
-Control.ca-list
-Control.ca-bundle
-Control.system-ca-bundle
-GitHub.sublime-settings
+# Database
+data/postgres/
 
-# Visual Studio Code #
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.history
+# Docker
+*.pid
 
+# Celery
+celerybeat-schedule
+celerybeat.pid
 
-staticfiles/
-data/web/static/
-data/web/media/
+# Coverage
+.coverage
+htmlcov/
+
+# pytest
+.pytest_cache/
+
+# Node
+node_modules/
+npm-debug.log

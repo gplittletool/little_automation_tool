@@ -15,6 +15,7 @@ services:
       - ./dotenv_files/.env
     depends_on:
       - psql
+      - redis
 
   psql:
     container_name: psql_little_tool
@@ -24,5 +25,43 @@ services:
     env_file:
       - ./dotenv_files/.env
 
+  redis:
+    container_name: redis_little_tool
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  celery_worker:
+    container_name: celery_worker_little_tool
+    build:
+      context: .
+    command: celery -A project worker -l info
+    volumes:
+      - ./djangoapp:/djangoapp
+      - ./data/web/static:/data/web/static
+      - ./data/web/media:/data/web/media
+    env_file:
+      - ./dotenv_files/.env
+    depends_on:
+      - psql
+      - redis
+
+  celery_beat:
+    container_name: celery_beat_little_tool
+    build:
+      context: .
+    command: celery -A project beat -l info
+    volumes:
+      - ./djangoapp:/djangoapp
+    env_file:
+      - ./dotenv_files/.env
+    depends_on:
+      - psql
+      - redis
+
 volumes:
   postgres_data:
+  redis_data:

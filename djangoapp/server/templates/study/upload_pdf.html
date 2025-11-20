@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Upload PDF - Little Automation Tool{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <h1 class="mb-2">📤 Upload de Plano de Estudos</h1>
+                <p class="text-muted">Envie seu PDF e deixe a IA fazer o resto!</p>
+            </div>
+
+            <!-- Card Principal -->
+            <div class="card border-0 shadow">
+                <div class="card-body p-4">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <!-- Título -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-bold">Título do Plano</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="title" 
+                                name="title" 
+                                placeholder="Ex: Plano de Estudos 2025.1"
+                                required
+                            >
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-bold">Descrição (opcional)</label>
+                            <textarea 
+                                class="form-control" 
+                                id="description" 
+                                name="description" 
+                                rows="3"
+                                placeholder="Adicione detalhes sobre este plano..."
+                            ></textarea>
+                        </div>
+
+                        <!-- Upload de Arquivo -->
+                        <div class="mb-4">
+                            <label for="pdf_file" class="form-label fw-bold">Arquivo PDF</label>
+                            <input 
+                                type="file" 
+                                class="form-control" 
+                                id="pdf_file" 
+                                name="pdf_file" 
+                                accept=".pdf"
+                                required
+                            >
+                            <div class="form-text">
+                                Máximo: 10MB • Apenas arquivos PDF
+                            </div>
+                        </div>
+
+                        <!-- Preview do arquivo -->
+                        <div id="filePreview" class="alert alert-info d-none">
+                            <strong>Arquivo selecionado:</strong>
+                            <span id="fileName"></span> (<span id="fileSize"></span>)
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-cloud-upload"></i> Enviar e Processar
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informações -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">ℹ️ Como funciona?</h5>
+                    <ol class="mb-0">
+                        <li class="mb-2">
+                            <strong>Upload:</strong> Envie seu PDF com o plano de estudos
+                        </li>
+                        <li class="mb-2">
+                            <strong>Processamento:</strong> Nossa IA analisa e extrai eventos, datas e matérias
+                        </li>
+                        <li class="mb-2">
+                            <strong>Sincronização:</strong> Eventos são criados automaticamente no Notion
+                        </li>
+                        <li>
+                            <strong>Notificações:</strong> Você recebe lembretes no Telegram!
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Progresso -->
+<div class="modal fade" id="progressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <h5 id="progressTitle">Enviando PDF...</h5>
+                <p class="text-muted mb-0" id="progressMessage">Aguarde, estamos processando seu arquivo.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Sucesso -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <div class="text-success mb-3">
+                    <i class="bi bi-check-circle" style="font-size: 4rem;"></i>
+                </div>
+                <h5 class="mb-3">PDF Enviado com Sucesso!</h5>
+                <p class="text-muted">
+                    Seu plano de estudos está sendo processado em segundo plano. 
+                    Você receberá uma notificação no Telegram quando estiver pronto.
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dashboard' %}" class="btn btn-primary">Ir para Dashboard</a>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Enviar Outro PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('pdf_file');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+
+    // Preview do arquivo
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            filePreview.classList.remove('d-none');
+        } else {
+            filePreview.classList.add('d-none');
+        }
+    });
+
+    // Submit do formulário
+    uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(uploadForm);
+        
+        // Mostrar modal de progresso
+        progressModal.show();
+        
+        try {
+            const response = await fetch('/api/upload-pdf/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            const data = await response.json();
+            
+            progressModal.hide();
+            
+            if (data.success) {
+                successModal.show();
+            } else {
+                alert('Erro: ' + (data.message || 'Erro ao enviar PDF'));
+            }
+            
+        } catch (error) {
+            progressModal.hide();
+            alert('Erro ao enviar arquivo: ' + error.message);
+        }
+    });
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}
+
