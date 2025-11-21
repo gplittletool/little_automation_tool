@@ -190,8 +190,8 @@ OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4')
 OPENAI_BASE_URL = os.getenv('OPENAI_BASE_URL', None)  # http://localhost:1234/v1
 
 # Opção 3: Google Gemini (RECOMENDADO - Grátis!)
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
+GOOGLE_GEMINI_KEY = os.getenv('GOOGLE_GEMINI_KEY', '')
+GOOGLE_GEMINI_MODEL = os.getenv('GOOGLE_GEMINI_MODEL', 'gemini-2.5-flash')
 
 # Prioridade: Gemini > OpenAI > LM Studio
 AI_PROVIDER = os.getenv('AI_PROVIDER', 'auto')  # auto, gemini, openai, lmstudio

@@ -105,7 +105,7 @@ RESPONDA APENAS COM O JSON, SEM TEXTO ADICIONAL.
         """
         # Determinar qual provider usar
         provider = getattr(settings, 'AI_PROVIDER', 'auto')
-        gemini_key = getattr(settings, 'GEMINI_API_KEY', '')
+        gemini_key = getattr(settings, 'GOOGLE_GEMINI_KEY', '')
         openai_key = getattr(settings, 'OPENAI_API_KEY', '')
         base_url = getattr(settings, 'OPENAI_BASE_URL', None)
         
@@ -137,15 +137,15 @@ RESPONDA APENAS COM O JSON, SEM TEXTO ADICIONAL.
             logger.error("google-generativeai não instalado")
             return None
         
-        gemini_key = getattr(settings, 'GEMINI_API_KEY', '')
+        gemini_key = getattr(settings, 'GOOGLE_GEMINI_KEY', '')
         if not gemini_key:
-            logger.error("GEMINI_API_KEY não configurada")
+            logger.error("GOOGLE_GEMINI_KEY não configurada")
             return None
         
         try:
             # Configurar Gemini
             genai.configure(api_key=gemini_key)
-            model_name = getattr(settings, 'GEMINI_MODEL', 'gemini-2.5-flash')
+            model_name = getattr(settings, 'GOOGLE_GEMINI_MODEL', 'gemini-2.5-flash')
             model = genai.GenerativeModel(model_name)
             
             logger.info(f"Usando Google Gemini: {model_name}")
