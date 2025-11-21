@@ -9,8 +9,8 @@ echo "ALLOWED_HOSTS: $ALLOWED_HOSTS"
 echo "=== Running Migrations ==="
 python manage.py migrate --noinput
 
-echo "=== Checking Django Configuration ==="
-python manage.py check --deploy
+echo "=== Collecting Static Files ==="
+python manage.py collectstatic --noinput
 
 echo "=== Starting Gunicorn ==="
 exec gunicorn project.wsgi:application \
