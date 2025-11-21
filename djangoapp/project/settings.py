@@ -26,19 +26,20 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'change-me')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.getenv('DEBUG', 0)))
 
-ALLOWED_HOSTS = [
-    h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',')
-    if h.strip()
-]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = [h.strip() for h in ALLOWED_HOSTS if h.strip()]
 
+# Se ALLOWED_HOSTS estiver vazio, permitir tudo
 if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['*']  # Permitir tudo em desenvolvimento
+    ALLOWED_HOSTS = ['*']
 
 # Railway/Produção
-CSRF_TRUSTED_ORIGINS = [
-    h.strip() for h in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
-    if h.strip()
-]
+csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if csrf_origins:
+    CSRF_TRUSTED_ORIGINS = [h.strip() for h in csrf_origins.split(',') if h.strip()]
+else:
+    # Aceitar qualquer origem em dev
+    CSRF_TRUSTED_ORIGINS = []
 
 # Application definition
 
