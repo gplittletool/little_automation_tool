@@ -19,6 +19,38 @@ from .services.telegram_service import TelegramService
 logger = logging.getLogger(__name__)
 
 
+# ==================== HEALTH CHECK ====================
+
+@api_view(['GET'])
+def health_check(request):
+    """
+    Health check endpoint para verificar status do sistema
+    """
+    from celery import current_app
+    
+    try:
+        # Verificar Celery
+        inspector = current_app.control.inspect()
+        active_workers = inspector.active()
+        
+        celery_status = {
+            'workers_online': len(active_workers) if active_workers else 0,
+            'workers': list(active_workers.keys()) if active_workers else []
+        }
+    except Exception as e:
+        celery_status = {
+            'error': str(e),
+            'workers_online': 0
+        }
+    
+    return Response({
+        'status': 'healthy',
+        'timestamp': timezone.now().isoformat(),
+        'celery': celery_status,
+        'database': 'connected'
+    })
+
+
 # ==================== VIEWS DE API ====================
 
 @api_view(['POST'])
@@ -36,15 +68,18 @@ def generate_telegram_code(request):
     }
     """
     try:
+        logger.info(f"[TELEGRAM] Generating code for user: {request.user.username}")
         from django.conf import settings
         
         user = request.user
         
         # Gerar código
         verification = TelegramVerificationCode.generate_code(user)
+        logger.info(f"[TELEGRAM] Code generated: {verification.code} for user: {user.username}")
         
         # Pegar username do bot (se configurado)
         bot_username = getattr(settings, 'TELEGRAM_BOT_USERNAME', '')
+        logger.info(f"[TELEGRAM] Bot username: {bot_username}")
         
         # Gerar URLs
         deep_link = f"https://t.me/{bot_username}?start={verification.code}" if bot_username else None

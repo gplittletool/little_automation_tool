@@ -207,9 +207,12 @@ def upload_pdf_api(request):
     }
     """
     try:
+        logger.info(f"[UPLOAD] Recebendo upload de PDF do usuário: {request.user.username}")
+        
         serializer = StudyPlanUploadSerializer(data=request.data)
         
         if not serializer.is_valid():
+            logger.error(f"[UPLOAD] Erro de validação: {serializer.errors}")
             return Response({
                 'success': False,
                 'errors': serializer.errors
@@ -217,11 +220,13 @@ def upload_pdf_api(request):
         
         # Criar StudyPlan
         study_plan = serializer.save(user=request.user)
+        logger.info(f"[UPLOAD] StudyPlan criado com sucesso: ID={study_plan.id}, Título={study_plan.title}")
         
         # Disparar task Celery para processar
-        process_study_plan.delay(study_plan.id)
+        task_result = process_study_plan.delay(study_plan.id)
+        logger.info(f"[UPLOAD] Task Celery disparada: task_id={task_result.id}, study_plan_id={study_plan.id}")
         
-        logger.info(f"PDF uploaded: {study_plan.id} - {study_plan.title}")
+        logger.info(f"[UPLOAD] Upload completo para: {study_plan.id} - {study_plan.title}")
         
         return Response({
             'success': True,

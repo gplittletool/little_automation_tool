@@ -8,6 +8,9 @@ from . import views_study
 from . import views_auth
 
 urlpatterns = [
+    # ==================== HEALTH CHECK ====================
+    path('health/', views.health_check, name='health_check'),
+    
     # ==================== AUTHENTICATION ====================
     path('login/', auth_views.LoginView.as_view(), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),

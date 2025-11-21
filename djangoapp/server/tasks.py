@@ -32,30 +32,37 @@ def process_study_plan(self, study_plan_id: int):
     Args:
         study_plan_id: ID do StudyPlan
     """
+    logger.info(f"========== [CELERY TASK] INICIANDO PROCESSAMENTO DO PLANO {study_plan_id} ==========")
     try:
         # Buscar plano
         study_plan = StudyPlan.objects.get(id=study_plan_id)
         user = study_plan.user
         
-        logger.info(f"Iniciando processamento do plano {study_plan_id}")
+        logger.info(f"[CELERY] Plano encontrado: {study_plan.title} | Usuário: {user.username}")
         
         # 1. Atualizar status
         study_plan.status = 'processing'
         study_plan.save()
         
         # 2. Extrair texto do PDF
-        logger.info("Extraindo texto do PDF...")
+        logger.info(f"[CELERY] Extraindo texto do PDF: {study_plan.pdf_file.path}")
         pdf_text = PDFProcessor.extract_text(study_plan.pdf_file.path)
         
         if not pdf_text:
+            logger.error("[CELERY] Erro: PDF vazio ou não foi possível extrair texto")
             raise Exception("Não foi possível extrair texto do PDF")
         
+        logger.info(f"[CELERY] Texto extraído com sucesso: {len(pdf_text)} caracteres")
+        
         # 3. Analisar com IA
-        logger.info("Analisando com IA...")
+        logger.info("[CELERY] Enviando texto para análise da IA...")
         ai_result = AIService.analyze_study_plan(pdf_text)
         
         if not ai_result:
+            logger.error("[CELERY] Erro: IA não retornou resultado")
             raise Exception("Falha na análise com IA")
+        
+        logger.info("[CELERY] IA retornou resultado com sucesso")
         
         # Salvar resultado bruto
         study_plan.ai_raw_response = ai_result['raw_response']
