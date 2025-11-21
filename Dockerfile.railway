@@ -29,6 +29,10 @@ RUN pip install --upgrade pip && \
 # Copiar código da aplicação
 COPY djangoapp/ /app/
 
+# Copiar script de inicialização
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # Criar diretórios necessários
 RUN mkdir -p /app/staticfiles /app/mediafiles
 
