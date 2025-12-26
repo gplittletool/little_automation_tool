@@ -1,0 +1,22 @@
+name: Little-Tool Automation
+
+on:
+  push:
+    branches:
+      - main
+      - dev-philipe
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Check content
+        run: ls -la 
